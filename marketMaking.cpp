@@ -132,7 +132,8 @@ public:
     }
     int getAsk()
     {
-        ask = bid;
+        ask = 0;
+        ask += bid;
 
         random_device rd;
         uniform_int_distribution<int> dist(1, 2);
@@ -153,11 +154,11 @@ public:
 
         if (call == "short")
         {
-            profit = ask - getSum();
+            profit = bid - getSum();
         }
         else
         {
-            profit = getSum() - bid;
+            profit = getSum() - ask;
         }
 
         return profit * quantity;
@@ -208,6 +209,11 @@ void play(int balance)
         if (call == "skip")
         {
             cout << "you skip this turn.\n";
+
+            this_thread::sleep_for(chrono::seconds(3));
+
+            system("clear");
+
             play(balance);
         }
 
@@ -219,23 +225,7 @@ void play(int balance)
         // check if player's quantity is valid and state transaction
         if (call == "short")
         {
-            if ((18 - ask) * quantity > balance)
-            {
-                cout << "you do not have enough balance to do that, -$50\n\n";
-                balance -= 50;
-
-                this_thread::sleep_for(chrono::seconds(3));
-
-                system("clear");
-
-                play(balance);
-            }
-
-            cout << "you " << call << " " << quantity << " shares at " << ask << ".\n\n";
-        }
-        else
-        {
-            if (quantity > balance / bid)
+            if ((18 - bid) * quantity > balance)
             {
                 cout << "you do not have enough balance to do that, -$50\n\n";
                 balance -= 50;
@@ -248,6 +238,22 @@ void play(int balance)
             }
 
             cout << "you " << call << " " << quantity << " shares at " << bid << ".\n\n";
+        }
+        else
+        {
+            if (quantity > balance / ask)
+            {
+                cout << "you do not have enough balance to do that, -$50\n\n";
+                balance -= 50;
+
+                this_thread::sleep_for(chrono::seconds(3));
+
+                system("clear");
+
+                play(balance);
+            }
+
+            cout << "you " << call << " " << quantity << " shares at " << ask << ".\n\n";
         }
 
         // calculate true profit
@@ -267,6 +273,13 @@ void play(int balance)
         {
             cout << "you calculated profit incorrectly, -$50\n\n";
             balance -= 50;
+
+            cout << tProfit << ", " << balance << "\n";
+
+            if (tProfit < 0)
+            {
+                balance += tProfit;
+            }
 
             this_thread::sleep_for(chrono::seconds(3));
 
